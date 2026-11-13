@@ -1,0 +1,18 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+*.tsbuildinfo
+
+# Environment variables (keep .env.example)
+.env*
+!.env.example
+
+# Runtime local database (auto-seeded on startup)
+data/*.json
+
+# Editor directories
+.vscode/
+.idea/

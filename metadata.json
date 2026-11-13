@@ -1,0 +1,6 @@
+{
+  "name": "HandoverSync AI",
+  "description": "Structured knowledge transfer and human-verified project handover platform aggregating CSV tasks, docs, PDFs, and GitHub activity into source-cited handover packs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
