@@ -1,16 +1,17 @@
 import React from 'react';
-import { ArrowRight, Calendar, FileStack, GitPullRequest, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Bot, Calendar, FileStack, GitPullRequest, ShieldCheck } from 'lucide-react';
 import type { ProjectSummaryDTO, ScreenId } from '../types';
 import { HandoverStatusTag, formatShortDate } from './StatusPrimitives';
 
 const DEMO_FLOW_STEPS: { label: string; screen: Exclude<ScreenId, 'landing'> }[] = [
   { label: '1. Select Project', screen: 'dashboard' },
-  { label: '2. View Activity', screen: 'activity' },
-  { label: '3. AI Generation', screen: 'generate' },
-  { label: '4. Handover Pack', screen: 'pack' },
-  { label: '5. Pending Work', screen: 'pending' },
-  { label: '6. Review & Approve', screen: 'review' },
-  { label: '7. History', screen: 'history' },
+  { label: '2. Project Activity', screen: 'activity' },
+  { label: '3. Integrations', screen: 'integrations' },
+  { label: '4. Knowledge Gaps', screen: 'gaps' },
+  { label: '5. Handover Q&A', screen: 'qa' },
+  { label: '6. AI Generation', screen: 'generate' },
+  { label: '7. Handover Pack', screen: 'pack' },
+  { label: '8. Review & Approve', screen: 'review' },
 ];
 
 export function DashboardScreen({
@@ -48,13 +49,23 @@ export function DashboardScreen({
               Select a project below to inspect aggregated activity, run AI extraction, and complete human approval.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => onNavigate('history')}
-            className="px-3.5 py-2 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0 self-start sm:self-auto"
-          >
-            View Handover History
-          </button>
+          <div className="flex items-center gap-2.5 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => onNavigate('chatbot')}
+              className="px-3.5 py-2 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors whitespace-nowrap shrink-0 inline-flex items-center gap-1.5"
+            >
+              <Bot className="w-3.5 h-3.5" />
+              Ask SyncBot
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('history')}
+              className="px-3.5 py-2 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors whitespace-nowrap shrink-0"
+            >
+              View Handover History
+            </button>
+          </div>
         </div>
 
         {/* Interactive End-to-End Demo Stepper */}

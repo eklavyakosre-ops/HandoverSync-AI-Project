@@ -3,6 +3,10 @@ import express from 'express';
 import path from 'node:path';
 import { readDatabase, writeDatabase } from './server/db.ts';
 import { generateHandoverWithAI } from './server/aiAgent.ts';
+import { registerKnowledgeGapRoutes } from './server/gapRoutes.ts';
+import { registerQaRoutes } from './server/qaRoutes.ts';
+import { registerBotRoutes } from './server/botRoutes.ts';
+import { registerIntegrationRoutes } from './server/integrationRoutes.ts';
 import type {
   ActivitySource,
   HandoverApprovalStatus,
@@ -218,11 +222,18 @@ app.post('/api/generate-handover', async (req, res) => {
   const nextVersion = existingVersions.length > 0 ? Math.max(...existingVersions) + 1 : 1;
 
   try {
+    const projectGaps = db.knowledgeGaps.filter((g) => g.projectId === projectId);
+    const projectExternalSources = (db.externalSources ?? []).filter(
+      (e) => e.projectId === projectId,
+    );
     const handover = await generateHandoverWithAI({
       project,
       sources: projectSources,
       version: nextVersion,
       focusInstructions,
+      knowledgeGaps: projectGaps,
+      externalSources: projectExternalSources,
+      integrations: db.integrations ?? {},
     });
 
     db.handovers.unshift(handover);
@@ -342,6 +353,11 @@ app.get('/api/history', (_req, res) => {
 
   res.json({ history: entries });
 });
+
+registerKnowledgeGapRoutes(app);
+registerQaRoutes(app);
+registerBotRoutes(app);
+registerIntegrationRoutes(app);
 
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {

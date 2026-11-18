@@ -1,13 +1,20 @@
 import React from 'react';
 import {
+  AlertOctagon,
   AlertTriangle,
   ArrowRight,
   CalendarClock,
   CheckCircle2,
+  Cpu,
   Download,
   ExternalLink,
   FileCode2,
+  GitBranch,
+  Layers,
+  ListChecks,
+  Plug,
   Sparkles,
+  Terminal,
   UserCheck,
 } from 'lucide-react';
 import type { HandoverPack, ProjectSummaryDTO, ScreenId } from '../types';
@@ -180,6 +187,69 @@ export function HandoverPackScreen({
           </div>
         </div>
       </section>
+
+      {/* Tech Stack & Connected Integrations (when available) */}
+      {((handover.technologyStack && handover.technologyStack.length > 0) ||
+        (handover.connectedIntegrations && handover.connectedIntegrations.length > 0)) && (
+        <div className="grid lg:grid-cols-2 gap-6">
+          {handover.technologyStack && handover.technologyStack.length > 0 && (
+            <section className="bg-white border border-slate-200 rounded-xl p-6 space-y-3">
+              <div className="flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-blue-700" />
+                <h2 className="text-base font-semibold text-slate-900">Technology Stack</h2>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {handover.technologyStack.map((tech, idx) => (
+                  <span
+                    key={`${tech}-${idx}`}
+                    className="px-2.5 py-1 text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200 rounded-md"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {handover.connectedIntegrations && handover.connectedIntegrations.length > 0 && (
+            <section className="bg-white border border-slate-200 rounded-xl p-6 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Plug className="w-4 h-4 text-blue-700" />
+                  <h2 className="text-base font-semibold text-slate-900">
+                    Connected Integrations ({handover.connectedIntegrations.length})
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('integrations')}
+                  className="text-xs font-medium text-blue-700 hover:underline"
+                >
+                  Manage Connectors →
+                </button>
+              </div>
+              <div className="space-y-2">
+                {handover.connectedIntegrations.map((ci, idx) => (
+                  <div
+                    key={`${ci.provider}-${idx}`}
+                    className="px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 text-xs"
+                  >
+                    <span className="font-medium text-slate-900">
+                      <span className="uppercase text-blue-700 mr-1.5">{ci.displayName}</span>
+                      {ci.targetLabel}
+                    </span>
+                    {typeof ci.recordsImported === 'number' && (
+                      <span className="text-slate-500 tabular-nums shrink-0">
+                        {ci.recordsImported} records
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
 
       {/* 2. Pending Tasks Snapshot (Links to Screen 6) */}
       <section className="bg-white border border-slate-200 rounded-xl overflow-hidden">
@@ -378,6 +448,172 @@ export function HandoverPackScreen({
           </div>
         </section>
       </div>
+
+      {/* Knowledge Gaps Snapshot, Decisions, Dependencies & Next Actions */}
+      {((handover.knowledgeGapsSnapshot && handover.knowledgeGapsSnapshot.length > 0) ||
+        (handover.missingDocumentation && handover.missingDocumentation.length > 0)) && (
+        <section className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <AlertOctagon className="w-4 h-4 text-amber-600" />
+              <h2 className="text-base font-semibold text-slate-900">
+                07. Knowledge Gaps &amp; Missing Documentation
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate('gaps')}
+              className="text-xs font-medium text-blue-700 hover:underline whitespace-nowrap"
+            >
+              Open Knowledge Gap Detector →
+            </button>
+          </div>
+          <div className="p-6 space-y-4">
+            {handover.knowledgeGapsSnapshot && handover.knowledgeGapsSnapshot.length > 0 && (
+              <div className="divide-y divide-slate-200 border border-slate-200 rounded-lg">
+                {handover.knowledgeGapsSnapshot.map((g) => (
+                  <div key={g.gapId} className="px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div>
+                      <span className="font-semibold text-slate-900">{g.title}</span>
+                      <span className="text-slate-500 ml-2">({g.category})</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {g.assignedOwner && (
+                        <span className="text-slate-600">Owner: {g.assignedOwner}</span>
+                      )}
+                      <span className="px-2 py-0.5 rounded border border-slate-200 bg-slate-50 font-medium text-slate-700">
+                        {g.severity} · {g.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {handover.missingDocumentation && handover.missingDocumentation.length > 0 && (
+              <div className="space-y-1.5">
+                <h3 className="text-xs font-semibold text-slate-700">Missing Documentation</h3>
+                <ul className="list-disc pl-5 space-y-1 text-xs text-slate-700">
+                  {handover.missingDocumentation.map((doc, idx) => (
+                    <li key={idx}>{doc}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {((handover.unresolvedIssues && handover.unresolvedIssues.length > 0) ||
+        (handover.importantDecisions && handover.importantDecisions.length > 0) ||
+        (handover.dependencies && handover.dependencies.length > 0)) && (
+        <div className="grid lg:grid-cols-2 gap-6">
+          {handover.importantDecisions && handover.importantDecisions.length > 0 && (
+            <section className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-2">
+                <GitBranch className="w-4 h-4 text-blue-700" />
+                <h2 className="text-base font-semibold text-slate-900">
+                  Important Technical Decisions ({handover.importantDecisions.length})
+                </h2>
+              </div>
+              <div className="divide-y divide-slate-200">
+                {handover.importantDecisions.map((dec) => (
+                  <div key={dec.id} className="p-5 space-y-2">
+                    <p className="text-sm font-semibold text-slate-900">{dec.decision}</p>
+                    <p className="text-xs text-slate-600 leading-relaxed">{dec.rationale}</p>
+                    <SourceCitationButton
+                      evidence={dec.sourceEvidence}
+                      sourceId={dec.sourceId}
+                      onInspect={onInspectSource}
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {((handover.dependencies && handover.dependencies.length > 0) ||
+            (handover.unresolvedIssues && handover.unresolvedIssues.length > 0)) && (
+            <section className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-blue-700" />
+                <h2 className="text-base font-semibold text-slate-900">
+                  Dependencies &amp; Unresolved Issues
+                </h2>
+              </div>
+              <div className="divide-y divide-slate-200">
+                {handover.unresolvedIssues?.map((ui) => (
+                  <div key={ui.id} className="p-5 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-slate-900">{ui.title}</p>
+                      <span className="text-xs font-medium px-2 py-0.5 rounded bg-red-50 text-red-800 border border-red-200">
+                        {ui.severity} · {ui.status}
+                      </span>
+                    </div>
+                    <SourceCitationButton
+                      evidence={ui.sourceEvidence}
+                      sourceId={ui.sourceId}
+                      onInspect={onInspectSource}
+                    />
+                  </div>
+                ))}
+                {handover.dependencies?.map((dep) => (
+                  <div key={dep.id} className="p-5 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-slate-900">{dep.name}</p>
+                      {dep.owner && (
+                        <span className="text-xs text-slate-500">Owner: {dep.owner}</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-600">{dep.details}</p>
+                    <SourceCitationButton
+                      evidence={dep.sourceEvidence}
+                      sourceId={dep.sourceId}
+                      onInspect={onInspectSource}
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
+
+      {((handover.operationalInstructions && handover.operationalInstructions.length > 0) ||
+        (handover.suggestedNextActions && handover.suggestedNextActions.length > 0)) && (
+        <div className="grid lg:grid-cols-2 gap-6">
+          {handover.operationalInstructions && handover.operationalInstructions.length > 0 && (
+            <section className="bg-white border border-slate-200 rounded-xl p-6 space-y-3">
+              <div className="flex items-center gap-2">
+                <Terminal className="w-4 h-4 text-slate-700" />
+                <h2 className="text-base font-semibold text-slate-900">
+                  Operational Instructions
+                </h2>
+              </div>
+              <ul className="list-disc pl-5 space-y-1.5 text-xs text-slate-700 leading-relaxed">
+                {handover.operationalInstructions.map((inst, idx) => (
+                  <li key={idx}>{inst}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {handover.suggestedNextActions && handover.suggestedNextActions.length > 0 && (
+            <section className="bg-white border border-slate-200 rounded-xl p-6 space-y-3">
+              <div className="flex items-center gap-2">
+                <ListChecks className="w-4 h-4 text-blue-700" />
+                <h2 className="text-base font-semibold text-slate-900">
+                  Suggested Next Actions
+                </h2>
+              </div>
+              <ol className="list-decimal pl-5 space-y-1.5 text-xs text-slate-700 leading-relaxed">
+                {handover.suggestedNextActions.map((act, idx) => (
+                  <li key={idx}>{act}</li>
+                ))}
+              </ol>
+            </section>
+          )}
+        </div>
+      )}
     </div>
   );
 }

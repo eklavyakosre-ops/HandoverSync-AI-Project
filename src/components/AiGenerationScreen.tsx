@@ -12,18 +12,18 @@ import { SourceKindIcon, sourceKindLabel } from './StatusPrimitives';
 const EXTRACTION_STAGES = [
   {
     title: 'Reading & normalizing selected sources',
-    detail: 'Parsing CSV task rows, GitHub issues/PRs, and technical runbook sections',
+    detail: 'Parsing CSV trackers, GitHub/Jira/Slack/Drive sync records, and technical runbooks',
   },
   {
-    title: 'Synthesizing project summary & architecture context',
-    detail: 'Identifying system boundaries, dependencies, and readiness posture',
+    title: 'Synthesizing project summary, tech stack & architecture context',
+    detail: 'Incorporating detected Knowledge Gaps, decisions, and system dependencies',
   },
   {
-    title: 'Extracting pending work, priorities & deadlines',
-    detail: 'Structuring Task | Priority | Deadline | Status table entries',
+    title: 'Extracting pending work, unresolved issues, priorities & deadlines',
+    detail: 'Structuring Task | Priority | Deadline | Status and Risk entries',
   },
   {
-    title: 'Mapping key files & attaching source citations',
+    title: 'Mapping key files, operational runbooks & source citations',
     detail: 'Linking every extracted item back to exact Issue #, CSV row, or Doc section',
   },
 ];

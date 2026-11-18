@@ -1,14 +1,18 @@
 import React from 'react';
 import {
   Activity,
+  AlertOctagon,
   ArrowRight,
+  Bot,
   CheckSquare,
   ChevronRight,
   FolderOpen,
   History,
   LayoutDashboard,
   LogOut,
+  MessageSquare,
   PackageCheck,
+  Plug,
   Sparkles,
   UserCheck,
 } from 'lucide-react';
@@ -24,12 +28,16 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', stepNum: '01', icon: LayoutDashboard },
   { id: 'activity', label: 'Project Activity', stepNum: '02', icon: Activity },
-  { id: 'generate', label: 'AI Generation', stepNum: '03', icon: Sparkles },
-  { id: 'pack', label: 'Handover Pack', stepNum: '04', icon: PackageCheck },
-  { id: 'pending', label: 'Pending Work', stepNum: '05', icon: CheckSquare },
-  { id: 'files', label: 'Key Files', stepNum: '06', icon: FolderOpen },
-  { id: 'review', label: 'Review & Approve', stepNum: '07', icon: UserCheck },
-  { id: 'history', label: 'Handover History', stepNum: '08', icon: History },
+  { id: 'integrations', label: 'Integrations', stepNum: '03', icon: Plug },
+  { id: 'gaps', label: 'Knowledge Gaps', stepNum: '04', icon: AlertOctagon },
+  { id: 'qa', label: 'Handover Q&A', stepNum: '05', icon: MessageSquare },
+  { id: 'generate', label: 'AI Handover Generation', stepNum: '06', icon: Sparkles },
+  { id: 'pack', label: 'Handover Pack', stepNum: '07', icon: PackageCheck },
+  { id: 'pending', label: 'Pending Work', stepNum: '08', icon: CheckSquare },
+  { id: 'files', label: 'Key Files', stepNum: '09', icon: FolderOpen },
+  { id: 'review', label: 'Review & Approve', stepNum: '10', icon: UserCheck },
+  { id: 'history', label: 'Handover History', stepNum: '11', icon: History },
+  { id: 'chatbot', label: 'SyncBot Chat', stepNum: '12', icon: Bot },
 ];
 
 export function AppShell({
@@ -195,7 +203,13 @@ export function AppShell({
         </header>
 
         {/* Scrollable Screen Viewport */}
-        <main className="flex-1 p-6 lg:p-8 max-w-6xl w-full mx-auto">{children}</main>
+        <main
+          className={`flex-1 p-6 lg:p-8 w-full mx-auto ${
+            activeScreen === 'qa' || activeScreen === 'chatbot' ? 'max-w-7xl' : 'max-w-6xl'
+          }`}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );

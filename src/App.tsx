@@ -30,6 +30,10 @@ import { PendingWorkScreen } from './components/PendingWorkScreen';
 import { KeyFilesScreen } from './components/KeyFilesScreen';
 import { ReviewApproveScreen } from './components/ReviewApproveScreen';
 import { HandoverHistoryScreen } from './components/HandoverHistoryScreen';
+import { KnowledgeGapsScreen } from './components/KnowledgeGapsScreen';
+import { HandoverQaScreen } from './components/HandoverQaScreen';
+import { SyncBotScreen } from './components/SyncBotScreen';
+import { IntegrationsScreen } from './components/IntegrationsScreen';
 import { SourceEvidenceDrawer } from './components/StatusPrimitives';
 
 export default function App() {
@@ -48,6 +52,7 @@ export default function App() {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [apiLoadError, setApiLoadError] = useState<string | null>(null);
 
   // Source Evidence Inspector Drawer state
   const [inspectedEvidence, setInspectedEvidence] = useState<{
@@ -60,24 +65,36 @@ export default function App() {
     try {
       const list = await fetchProjects();
       setProjects(list);
-      if (list.length > 0 && !list.some((p) => p.id === selectedProjectId)) {
-        setSelectedProjectId(list[0].id);
+      setApiLoadError(null);
+      if (list.length > 0) {
+        setSelectedProjectId((prev) => (list.some((p) => p.id === prev) ? prev : list[0].id));
       }
+    } catch (err) {
+      setApiLoadError(
+        err instanceof Error ? err.message : 'Unable to connect to HandoverSync backend.',
+      );
     } finally {
       setLoadingProjects(false);
     }
-  }, [selectedProjectId]);
+  }, []);
 
   const loadProjectDetail = useCallback(async (projectId: string, preferredHandoverId?: string) => {
     if (!projectId) return;
-    const detail = await fetchProjectDetail(projectId);
-    setSources(detail.sources);
-    setSelectedSourceIds(detail.sources.map((s) => s.id));
-    setHandovers(detail.handovers);
-    if (preferredHandoverId && detail.handovers.some((h) => h.id === preferredHandoverId)) {
-      setActiveHandoverId(preferredHandoverId);
-    } else {
-      setActiveHandoverId(detail.handovers[0]?.id ?? null);
+    try {
+      const detail = await fetchProjectDetail(projectId);
+      setSources(detail.sources);
+      setSelectedSourceIds(detail.sources.map((s) => s.id));
+      setHandovers(detail.handovers);
+      setApiLoadError(null);
+      if (preferredHandoverId && detail.handovers.some((h) => h.id === preferredHandoverId)) {
+        setActiveHandoverId(preferredHandoverId);
+      } else {
+        setActiveHandoverId(detail.handovers[0]?.id ?? null);
+      }
+    } catch (err) {
+      setApiLoadError(
+        err instanceof Error ? err.message : 'Unable to load project details from backend.',
+      );
     }
   }, []);
 
@@ -86,6 +103,10 @@ export default function App() {
     try {
       const entries = await fetchHandoverHistory();
       setHistory(entries);
+    } catch (err) {
+      setApiLoadError(
+        err instanceof Error ? err.message : 'Unable to load handover history.',
+      );
     } finally {
       setLoadingHistory(false);
     }
@@ -93,13 +114,13 @@ export default function App() {
 
   useEffect(() => {
     if (!session) return;
-    loadProjectsList();
-    loadHistory();
+    void loadProjectsList();
+    void loadHistory();
   }, [session, loadProjectsList, loadHistory]);
 
   useEffect(() => {
     if (!session || !selectedProjectId) return;
-    loadProjectDetail(selectedProjectId);
+    void loadProjectDetail(selectedProjectId);
   }, [session, selectedProjectId, loadProjectDetail]);
 
   const handleLogin = (newSession: UserSession) => {
@@ -236,6 +257,19 @@ export default function App() {
     }
     if (activeScreen === 'activity') {
       return {
+        label: 'Detect Knowledge Gaps',
+        onClick: () => setActiveScreen('gaps'),
+        disabled: selectedSourceIds.length === 0,
+      };
+    }
+    if (activeScreen === 'integrations') {
+      return {
+        label: 'Detect Knowledge Gaps',
+        onClick: () => setActiveScreen('gaps'),
+      };
+    }
+    if (activeScreen === 'gaps') {
+      return {
         label: 'Generate Handover Pack',
         onClick: () => setActiveScreen('generate'),
         disabled: selectedSourceIds.length === 0,
@@ -274,6 +308,25 @@ export default function App() {
         onSelectProject={handleSelectProject}
         primaryAction={getPrimaryAction()}
       >
+        {apiLoadError && (
+          <div className="mb-4 p-3.5 rounded-lg bg-red-50 border border-red-200 flex items-center justify-between gap-4 text-xs text-red-900">
+            <span>
+              <strong>Connection issue:</strong> {apiLoadError}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                void loadProjectsList();
+                void loadHistory();
+                if (selectedProjectId) void loadProjectDetail(selectedProjectId);
+              }}
+              className="px-3 py-1.5 font-medium bg-white border border-red-300 rounded-md hover:bg-red-100 transition-colors whitespace-nowrap shrink-0"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         {activeScreen === 'dashboard' && (
           <DashboardScreen
             projects={projects}
@@ -300,6 +353,53 @@ export default function App() {
             onAddSource={handleAddSource}
             onDeleteSource={handleDeleteSource}
             onProceedToGenerate={() => setActiveScreen('generate')}
+          />
+        )}
+
+        {activeScreen === 'integrations' && currentProject && (
+          <IntegrationsScreen
+            projects={projects}
+            selectedProjectId={selectedProjectId}
+            onSelectProject={handleSelectProject}
+            onSourcesSynced={async () => {
+              await loadProjectDetail(selectedProjectId);
+              await loadProjectsList();
+            }}
+            onInspectSource={handleInspectSource}
+            onNavigate={(s) => setActiveScreen(s)}
+          />
+        )}
+
+        {activeScreen === 'gaps' && currentProject && (
+          <KnowledgeGapsScreen
+            projects={projects}
+            selectedProjectId={selectedProjectId}
+            onSelectProject={handleSelectProject}
+            session={session}
+            onInspectSource={handleInspectSource}
+            onNavigate={(s) => setActiveScreen(s)}
+          />
+        )}
+
+        {activeScreen === 'qa' && currentProject && (
+          <HandoverQaScreen
+            projects={projects}
+            selectedProjectId={selectedProjectId}
+            onSelectProject={handleSelectProject}
+            session={session}
+            onInspectSource={handleInspectSource}
+            onNavigate={(s) => setActiveScreen(s)}
+          />
+        )}
+
+        {activeScreen === 'chatbot' && currentProject && (
+          <SyncBotScreen
+            projects={projects}
+            selectedProjectId={selectedProjectId}
+            onSelectProject={handleSelectProject}
+            session={session}
+            onInspectSource={handleInspectSource}
+            onNavigate={(s) => setActiveScreen(s)}
           />
         )}
 

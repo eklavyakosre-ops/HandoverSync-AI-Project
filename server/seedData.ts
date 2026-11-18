@@ -5,6 +5,15 @@ const AVATAR_INCOMING = '/src/assets/images/avatar_incoming_manager_179455495130
 
 export function createSeedDatabase(): HandoverDatabase {
   return {
+    knowledgeGaps: [],
+    gapAnalysisRuns: [],
+    qaConversations: [],
+    botConversations: [],
+    integrations: {},
+    integrationConfigurations: [],
+    integrationSecrets: {},
+    syncRuns: [],
+    externalSources: [],
     projects: [
       {
         id: 'proj-checkout-v3',
